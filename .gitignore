@@ -31,3 +31,9 @@
 # Debug files
 *.dSYM/
 *.su
+/Debug
+*.suo
+*.opendb
+*.user
+*.filters
+*.db
