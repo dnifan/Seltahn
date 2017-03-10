@@ -19,7 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\lexer.c" />
+    <ClCompile Include="src\list.c" />
     <ClCompile Include="src\main.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\lexer.h" />
+    <ClInclude Include="include\list.h" />
+    <ClInclude Include="include\tokens.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D4EF02D9-D1F6-4DB7-814F-8C50DA30EB89}</ProjectGuid>
@@ -91,6 +98,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CompileAs>CompileAsC</CompileAs>
+      <AdditionalIncludeDirectories>include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
