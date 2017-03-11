@@ -9,12 +9,12 @@ enum token_type_t {
     WHITESPACE,
     OPERATOR,
 
-    SEMICOLON = ';',
+    SEMICOLON,
 
-    LPAREN = '(',
-    RPAREN = ')',
-    LBRACE = '{',
-    RBRACE = '}',
+    LPAREN,
+    RPAREN,
+    LBRACE,
+    RBRACE,
 };
 typedef enum token_type_t token_type_t;
 
@@ -37,5 +37,6 @@ struct token_t {
     token_type_t type;
     union token_parameter param;
 };
-
 typedef struct token_t token_t;
+
+const char *token_get_name(token_t token);

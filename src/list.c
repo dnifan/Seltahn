@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 /*!
-* @brief Creates a new linked list.
+* Creates a new linked list.
 */
 linked_list *list_new() {
     linked_list *list = malloc(sizeof(linked_list));
@@ -80,4 +80,15 @@ list_node *list_last(linked_list *list) {
     while (node->next != NULL)
         node = node->next;
     return node;
+}
+
+void **list_toarray(linked_list *list) {
+    void **result = (void**)malloc(list->length * sizeof(void*));
+    list_node *node = list->root_node->next;
+    for (uint32_t i = 0;
+        i < list->length && node != NULL;
+        i++, node = node->next) {
+        result[i] = node->element;
+    }
+    return result;
 }

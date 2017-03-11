@@ -36,3 +36,4 @@ list_node *list_remove(linked_list *list, void *object);
 void *list_at(linked_list *list, uint32_t idx);
 list_node *list_first(linked_list *list);
 list_node *list_last(linked_list *list);
+void **list_toarray(linked_list *list);

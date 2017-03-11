@@ -57,22 +57,22 @@ operator_type_t get_operator(char ch) {
     }
 }
 
-token_t read_token(lexer_state *state) {
-    token_t token;
-    token.param.number = 0;
+token_t *read_token(lexer_state *state) {
+    token_t *token = (token_t*)malloc(sizeof(token_t));
+    token->param.number = 0;
 
     if (isdigit(*state->current)) {
         // It must be a number, read it.
-        token.type = NUMBER;
-        token.param.number = read_number(state);
+        token->type = NUMBER;
+        token->param.number = read_number(state);
     }
     else if (iswspace(*state->current)) {
-        token.type = WHITESPACE;
-        token.param.number = eat_whitespace(state);;
+        token->type = WHITESPACE;
+        token->param.number = eat_whitespace(state);;
     }
     else if (is_operator(*state->current)) {
-        token.type = OPERATOR;
-        token.param.number = (uint32_t)get_operator(*state->current);
+        token->type = OPERATOR;
+        token->param.number = (uint32_t)get_operator(*state->current);
         state->current++;
     }
     else {
@@ -82,15 +82,16 @@ token_t read_token(lexer_state *state) {
     return token;
 }
 
-token_t *lex_run(lexer_state *state) {
+token_t **lex_run(lexer_state *state, uint32_t *token_count) {
     linked_list *list = list_new();
 
     while (state->current < state->end) {
-        token_t token = read_token(state);
-        printf("%i %08X\n", token.type, token.param);
+        token_t *token = read_token(state);
+        list_add(list, token);
     }
-
-    return NULL;
+    
+    *token_count = list->length;
+    return list_toarray(list);
 }
 
 lexer_state *lex_init(const char * input)
