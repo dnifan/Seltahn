@@ -108,3 +108,4 @@ struct token_t {
 typedef struct token_t token_t;
 
 const char *token_get_name(token_t token);
+const char *token_get_name_by_type(token_type_t token);

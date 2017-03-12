@@ -93,3 +93,7 @@ const char *token_translation[] = {
 const char *token_get_name(token_t token) {
     return token_translation[token.type];
 }
+
+const char *token_get_name_by_type(token_type_t token) {
+    return token_translation[token];
+}

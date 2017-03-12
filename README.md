@@ -7,3 +7,7 @@ Seltahn is a hobbyist's C compiler, built from scratch for educational and resea
  * Only the basics of C will be implemented (no wide char support, etc).
  * Will add general purpose improvements to the C language.
 
+# Used Sources
+ * ANSI C89 Grammar: https://www.lysator.liu.se/c/ANSI-C-grammar-y.html
+ 
+ 

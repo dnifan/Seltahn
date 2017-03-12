@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "tokens.h"
 #include "lexer.h"
+#include "ast.h"
 
 const char *example = "int main()\
 {\
@@ -26,13 +27,7 @@ const char *example = "int main()\
     return (0);\
 }";
 
-int main() {
-
-    uint32_t token_count;
-    lexer_state *state = lex_init(example);
-    token_t **tokens = lex_run(state, &token_count);
-    lex_destroy(state);
-
+void tokens_debug(token_t **tokens, int token_count) {
     for (int i = 0;i < token_count;i++) {
         token_t *token = tokens[i];
 
@@ -47,6 +42,15 @@ int main() {
 
         printf("\n");
     }
+}
 
+int main() {
+
+    uint32_t token_count;
+    lexer_state *state = lex_init("int ((a))[];");
+    token_t **tokens = lex_run(state, &token_count);
+    ast_t *ast = ast_create(tokens, token_count);
+    
+    lex_destroy(state);
     return 0;
 }

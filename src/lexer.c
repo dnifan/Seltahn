@@ -9,10 +9,6 @@
 #include <stdarg.h>
 #include <varargs.h>
 
-uint32_t is_end_of_token(char ch) {
-    return (ch == SEMICOLON || iswspace(ch));
-}
-
 uint32_t read_number(lexer_state *state) {
     uint32_t result;
 
@@ -233,6 +229,8 @@ token_t **lex_run(lexer_state *state, uint32_t *token_count) {
 
     while (state->current < state->end) {
         token_t *token = read_token(state);
+        if (token->type == WHITESPACE)
+            continue;
         list_add(list, token);
     }
     
@@ -259,7 +257,7 @@ void lex_destroy(lexer_state *state) {
 void lex_fatal(const char *reason, ...) {
     va_list ap;
     va_start(ap, reason);
-    printf("Fatal error: ");
+    printf("lex_fatal: ");
     vprintf(reason, ap);
     printf("\n\n");
     va_end(ap);

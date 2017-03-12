@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ast.c" />
     <ClCompile Include="src\lexer.c" />
     <ClCompile Include="src\list.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\tokens.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\ast.h" />
     <ClInclude Include="include\lexer.h" />
     <ClInclude Include="include\list.h" />
     <ClInclude Include="include\tokens.h" />
