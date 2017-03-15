@@ -4,7 +4,7 @@
  * Defines a token of the C language.
  */
 enum token_type_t {
-    SYMBOL,
+    IDENTIFIER,
     NUMBER,
     WHITESPACE,
     STRING,

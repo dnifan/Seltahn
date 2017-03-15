@@ -213,7 +213,7 @@ token_t *read_token(lexer_state *state) {
         else if (strcmp(lit, "volatile") == 0) { token->type = VOLATILE; }
         else if (strcmp(lit, "while") == 0) { token->type = WHILE; }
         else {
-            token->type = SYMBOL;
+            token->type = IDENTIFIER;
             token->param.string = lit;
         }
     }

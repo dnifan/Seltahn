@@ -1,5 +1,7 @@
 #include "tokens.h"
 #include "ast.h"
+#include "list.h"
+#include "stab.h"
 
 #include <varargs.h>
 #include <stdarg.h>
@@ -8,6 +10,7 @@
 token_t *current;
 uint32_t total_tokens, token_index;
 token_t **tokens;
+stab_t *current_stab;
 
 ast_node_t *declarator();
 ast_node_t *expression();
@@ -19,6 +22,7 @@ ast_node_t *new_node(ast_node_type type) {
     ast_node_t *node = (ast_node_t*)malloc(sizeof(ast_node_t));
     memset(node, 0, sizeof(ast_node_t));
     node->type = type;
+    node->token = current;
     return node;
 }
 
@@ -54,7 +58,13 @@ void expect(token_type_t tok) {
 }
 
 ast_node_t *type_specifier() {
-    if (current->type == VOID ||
+    if (accept(STRUCT)) {
+        ast_fatal("structs not supported");
+    }
+    else if (accept(UNION)) {
+        ast_fatal("unions not supported");
+    }
+    else if (current->type == VOID ||
         current->type == INT ||
         current->type == CHAR ||
         current->type == SHORT ||
@@ -111,7 +121,7 @@ ast_node_t *declaration_specifiers() {
             }
         }
     }
-    
+
     ast_node_t *node = new_node(DECLARATION_SPECIFIER_LIST);
     node->left = left;
     node->right = declaration_specifiers();
@@ -128,7 +138,7 @@ ast_node_t *parameter_type_list() {
 
 ast_node_t *direct_declarator() {
     ast_node_t *res = NULL;
-    if (current->type == SYMBOL) {
+    if (current->type == IDENTIFIER) {
         res = new_node(DIRECT_DECLARATOR);
         next();
     }
@@ -138,32 +148,33 @@ ast_node_t *direct_declarator() {
         expect(RPAREN);
     }
 
-    if (current->type == LBRACK) {
-        // array declaration
-        next(); // [
-        res = new_node(ARRAY_DECLARE);
-        res->left = constant_expression();
-        expect(RBRACK);
-        return res;
-    }
-    else if (current->type == LPAREN) {
-        // function prototype.
-        next(); // (
-        ast_node_t *ptl = parameter_type_list();
-        expect(RPAREN);
-    }
-    
+    //if (current->type == LBRACK) {
+    //    // array declaration
+    //    next(); // [
+    //    res = new_node(ARRAY_DECLARE);
+    //    res->left = constant_expression();
+    //    expect(RBRACK);
+    //    return res;
+    //}
+    //else if (current->type == LPAREN) {
+    //    // function prototype.
+    //    next(); // (
+    //    ast_node_t *ptl = parameter_type_list();
+    //    expect(RPAREN);
+    //}
+
     return res;
 }
 
 ast_node_t *declarator() {
-    return direct_declarator();
+    ast_node_t *d = direct_declarator();
+    return d;
 }
 
 ast_node_t *primary_expression() {
     if (current->type == NUMBER) {
         ast_node_t *result = new_node(CONSTANT);
-        result->param = current->param.number;
+        result->param.number = current->param.number;
         next();
         return result;
     }
@@ -182,12 +193,12 @@ ast_node_t *postfix_expression() {  // a[123]
     return primary_expression();
 
     /*ast_node_t *n = primary_expression();
-    
+
     if (accept(LBRACK)) {
         ast_node_t *result = new_node(ARRAY_INDEX);
         result->
     }*/
-    
+
     /*if (current->type == NUMBER) {
         ast_node_t *n = new_node(CONSTANT);
         n->param = current->param.number;
@@ -224,7 +235,7 @@ ast_node_t *unary_expression() {
     }
     else if (accept(SIZEOF)) {
         ast_node_t *n = new_node(SIZE_OF);
-        
+
         if (accept(LPAREN)) {
             ast_fatal("sizeof(type_name) not supported yet.");
         }
@@ -433,7 +444,7 @@ ast_node_t *logical_or_expression() {
 
 ast_node_t *conditional_expression() {
     ast_node_t *n = logical_or_expression();
-    
+
     // a ? b : c
     if (accept(QUESTION)) {
         ast_node_t *result = new_node(CONDITIONAL);
@@ -508,7 +519,7 @@ ast_node_t *initializer() {
 ast_node_t *init_declarator() {
     ast_node_t *node = new_node(INIT_DECLARATOR);
     node->left = declarator();
-    
+
     if (accept(ASSIGN)) {
         node->right = initializer();
     }
@@ -537,7 +548,7 @@ ast_node_t *declaration() {
     d->left = declaration_specifiers();
     if (d->left == NULL)
         return NULL;
-    
+
     // Apparently, C89 allows declaring a variable without a declarator list.
     // So, "int;" is allowed. :/
     d->right = init_declarator_list();
@@ -562,7 +573,7 @@ ast_node_t *translation_unit() {
     while (!is_eof()) {
         thisNode->right = translation_unit();
     }
-    
+
     return thisNode;
 }
 
@@ -570,6 +581,9 @@ ast_t *ast_create(token_t **t, int token_count) {
     tokens = t;
     token_index = 0;
     total_tokens = token_count;
+
+    // create global scope symbol table
+    current_stab = stab_new(NULL);
 
     next();
     ast_node_t *root_node = translation_unit();

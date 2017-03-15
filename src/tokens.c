@@ -1,7 +1,7 @@
 #include "tokens.h"
 
 const char *token_translation[] = {
-    "SYMBOL",
+    "IDENTIFIER",
     "NUMBER",
     "WHITESPACE",
     "STRING",

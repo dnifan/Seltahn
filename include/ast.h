@@ -12,9 +12,7 @@ enum ast_node_type {
     INIT_DECLARATOR,
     UNARY_OPERATOR,
 
-
-
-
+    
     CONDITIONAL,
     INCREMENT,
     ARE_EQUAL,
@@ -45,10 +43,15 @@ enum ast_node_type {
 };
 typedef enum ast_node_type ast_node_type;
 
+union ast_parameter {
+    uint32_t number;
+
+};
+
 struct ast_node_t {
     ast_node_type type;
     token_t *token;
-    uint32_t param;
+    union ast_parameter param;
     struct ast_node_t *left;
     struct ast_node_t *middle;
     struct ast_node_t *right;

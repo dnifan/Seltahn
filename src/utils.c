@@ -82,7 +82,6 @@ void ast_dump_start(ast_node_t *root) {
     printf("}\n\n\n");
 }
 
-// TODO: put in table
 const char *ast_get_type_name(ast_node_type type) {
     return ast_translation[type];
 }

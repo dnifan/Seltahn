@@ -36,7 +36,7 @@ void tokens_debug(token_t **tokens, int token_count) {
 
         printf("%10s (%02X) %08X", token_get_name(*token), token->type, token->param);
 
-        if (token->type == SYMBOL || token->type == STRING) {
+        if (token->type == IDENTIFIER || token->type == STRING) {
             printf(" (%s)", token->param.string);
         }
 
