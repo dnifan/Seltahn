@@ -1,5 +1,6 @@
 #include "tokens.h"
 #include "ast.h"
+#include "list.h"
 
 #include <varargs.h>
 #include <stdarg.h>
@@ -8,12 +9,33 @@
 token_t *current;
 uint32_t total_tokens, token_index;
 token_t **tokens;
+linked_list *contexts;
 
 ast_node_t *declarator();
 ast_node_t *expression();
 ast_node_t *cast_expression();
 ast_node_t *conditional_expression();
 void ast_dump_start(ast_node_t *root);
+
+void push() {
+	list_add(contexts, (void*)(token_index-1));
+}
+
+void pop() {
+	list_node *node = list_last(contexts);
+	list_remove_node(contexts, node);
+	
+	token_index = (uint32_t)node->element;
+	current = tokens[token_index];
+
+	free(node);
+}
+
+void discard() {
+	list_node *node = list_last(contexts);
+	list_remove_node(contexts, node);
+	free(node);
+}
 
 ast_node_t *new_node(ast_node_type type) {
     ast_node_t *node = (ast_node_t*)malloc(sizeof(ast_node_t));
@@ -546,11 +568,44 @@ ast_node_t *declaration() {
     return d;
 }
 
+ast_node_t *compound_statement() {
+	if (accept(LBRACE)) {
+		expect(RBRACE);
+		return new_node(COMPOUND_STATEMENT);
+	}
+	else
+		return NULL;
+}
+
+ast_node_t *function_definition() {
+	push();
+	ast_node_t *ds = declaration_specifiers();
+	ast_node_t *d = declarator();
+	if (d != NULL) {
+		ast_node_t *c = compound_statement();
+		if (c != NULL) {
+			discard();
+			printf("it\'s a function!\n");
+
+			ast_node_t *n = new_node(FUNCTION_DEFINITION);
+			n->left = ds;
+			n->middle = d;
+			n->right = c;
+			return n;
+		}
+	}
+	pop();
+	return NULL;
+}
+
 ast_node_t *external_declaration() {
-    ast_node_t *d = declaration();
+    ast_node_t *d = function_definition();
     if (d == NULL) {
         // function declaration
-        ast_fatal("func decl not supported yet");
+		d = declaration();
+		if (d == NULL) {
+			ast_fatal("expected function definition or declaration");
+		}
     }
     return d;
 }
@@ -570,9 +625,11 @@ ast_t *ast_create(token_t **t, int token_count) {
     tokens = t;
     token_index = 0;
     total_tokens = token_count;
+	contexts = list_new();
 
     next();
     ast_node_t *root_node = translation_unit();
 
     ast_dump_start(root_node);
+	list_free(contexts);
 }

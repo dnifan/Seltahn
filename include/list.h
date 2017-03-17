@@ -33,6 +33,7 @@ linked_list *list_new();
 void list_free(linked_list *list);
 list_node *list_add(linked_list *list, void *object);
 list_node *list_remove(linked_list *list, void *object);
+void list_remove_node(linked_list *list, list_node *node);
 void *list_at(linked_list *list, uint32_t idx);
 list_node *list_first(linked_list *list);
 list_node *list_last(linked_list *list);

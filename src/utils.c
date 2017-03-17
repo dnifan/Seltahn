@@ -16,6 +16,12 @@ const char *ast_translation[] = {
     "TYPE_QUALIFIER",
     "INIT_DECLARATOR",
     "UNARY_OPERATOR",
+	"COMPOUND_STATEMENT",
+	"FUNCTION_DEFINITION",
+
+
+
+
     "CONDITIONAL",
     "INCREMENT",
     "ARE_EQUAL",

@@ -92,3 +92,10 @@ void **list_toarray(linked_list *list) {
     }
     return result;
 }
+
+void list_remove_node(linked_list *list, list_node *node) {
+	node->prev->next = node->next;
+	if (node->next != NULL)
+		node->next->prev = node->prev;
+	list->length--;
+}
