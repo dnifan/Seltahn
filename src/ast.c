@@ -14,10 +14,12 @@ linked_list *contexts;
 ast_node_t *statement();
 ast_node_t *declarator();
 ast_node_t *expression();
+ast_node_t *initializer();
 ast_node_t *cast_expression();
-ast_node_t *compound_statement();
-ast_node_t *conditional_expression();
 ast_node_t *postfix_expression();
+ast_node_t *compound_statement();
+ast_node_t *assignment_expression();
+ast_node_t *conditional_expression();
 void ast_dump_start(ast_node_t *root);
 
 void push() {
@@ -222,6 +224,18 @@ ast_node_t *primary_expression() {
     }
 }
 
+ast_node_t *argument_expression_list() {
+    ast_node_t *ex = assignment_expression();
+    if (ex == NULL)
+        return NULL;
+
+    ast_node_t *n = new_node(ARG_EXPRESSION_LIST);
+    n->left = ex;
+    if (accept(COMMA))
+        n->right = argument_expression_list();
+    return n;
+}
+
 ast_node_t *postfix() {
     if (accept(LBRACK)) {
         ast_node_t *ex = expression();
@@ -237,6 +251,14 @@ ast_node_t *postfix() {
     else if (accept(LPAREN)) {
         if (accept(RPAREN)) {
             return new_node(FUNCTION_CALL);
+        }
+        else {
+            ast_node_t *fc = new_node(FUNCTION_CALL);
+            fc->left = argument_expression_list();
+            if (fc->left == NULL)
+                ast_fatal(current, "expected argument expression list");
+            expect(RPAREN);
+            return fc;
         }
     }
     else if (accept(PERIOD)) {
@@ -338,8 +360,23 @@ ast_node_t *unary_expression() {
 }
 
 ast_node_t *cast_expression() {
-    // TODO: make casting code
-    return unary_expression();
+    ast_node_t *ue = unary_expression();
+    if (ue != NULL)
+        return ue;
+
+    if (accept(LPAREN)) {
+        ast_fatal(current, "casting not supported yet");
+
+        /*ast_node_t *tp = new_node(CAST);
+        tp->left = type_name();
+        if (tp->left == NULL)
+            ast_fatal(current, "expected identifier");
+        expect(RPAREN);
+        tp->right = cast_expression();
+        return tp;*/
+    }
+
+    return NULL;
 }
 
 ast_node_t *multiplicative_expression() {
@@ -590,8 +627,31 @@ ast_node_t *expression() {
     return n;
 }
 
+ast_node_t *initializer_list() {
+    ast_node_t *i = initializer();
+    if (i == NULL)
+        return NULL;
+
+    ast_node_t *result = new_node(INITIALIZER_LIST);
+    result->left = i;
+    if (accept(COMMA))
+        result->right = initializer_list();
+    return result;
+}
+
 ast_node_t *initializer() {
-    return conditional_expression();
+    ast_node_t *a = assignment_expression();
+    if (a != NULL)
+        return a;
+
+    if (accept(LBRACE)) {
+        ast_node_t *il = initializer_list();
+        accept(COMMA);
+        expect(RBRACE);
+        return il;
+    }
+    else
+        return NULL;
 }
 
 ast_node_t *init_declarator() {
@@ -633,6 +693,17 @@ ast_node_t *declaration() {
 
     expect(SEMICOLON);
     return d;
+}
+
+ast_node_t *declaration_list() {
+    ast_node_t *d = declaration();
+    if (d == NULL)
+        return NULL;
+
+    ast_node_t *l = new_node(DECLARATION_LIST);
+    l->left = d;
+    l->right = declaration_list();
+    return l;
 }
 
 ast_node_t *selection_statement() {
@@ -820,7 +891,12 @@ ast_node_t *statement_list() {
 ast_node_t *compound_statement() {
 	if (accept(LBRACE)) {
 		ast_node_t *result = new_node(COMPOUND_STATEMENT);
-		result->middle = statement_list();
+		result->right = statement_list();
+        if (result->right == NULL) {
+            result->left = declaration_list();
+            result->right = statement_list();
+        }
+        
 		expect(RBRACE);
 		return result;
 	}

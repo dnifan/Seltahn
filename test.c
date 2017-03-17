@@ -1,8 +1,10 @@
 void a() {
-    if (a[0]->fld == 3) {
+    int a = 3, my = 5;
+    int b = a->x[3]++;
+    if (a == 3) {
+        int c = 5;
 
-    }
-    if (a->fld == 3) {
-
+        if (c == 4) {}
+        
     }
 }
