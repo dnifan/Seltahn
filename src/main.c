@@ -1,7 +1,10 @@
-#include <stdio.h>
 #include "tokens.h"
 #include "lexer.h"
 #include "ast.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 void tokens_debug(token_t **tokens, int token_count) {
     for (int i = 0;i < token_count;i++) {
@@ -10,7 +13,7 @@ void tokens_debug(token_t **tokens, int token_count) {
         if (token->type == WHITESPACE)
             continue;
 
-        printf("%10s (%02X) %08X", token_get_name(*token), token->type, token->param);
+        printf("%10s (%02X) %08X", token_get_name(*token), token->type, token->param.number);
 
         if (token->type == SYMBOL || token->type == STRING) {
             printf(" (%s)", token->param.string);

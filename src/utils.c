@@ -1,7 +1,9 @@
 #include "tokens.h"
 #include "ast.h"
 
+#include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 const char *ast_translation[] = {
     "EMPTY",
@@ -85,14 +87,14 @@ void ast_dump(ast_node_t *node) {
     if (node == NULL)
         return;
 
-    printf("  n%08X [label=\"%s\"];\n", node, ast_get_type_name(node->type));
+    printf("  n%p [label=\"%s\"];\n", node, ast_get_type_name(node->type));
 
     if (node->left != NULL)
-        printf("  n%08X -- n%08X [label=%i];\n", node, node->left, node->left->param);
+        printf("  n%p -- n%p [label=%i];\n", node, node->left, node->left->param);
     if (node->middle != NULL)
-        printf("  n%08X -- n%08X [label=%i];\n", node, node->middle, node->middle->param);
+        printf("  n%p -- n%p [label=%i];\n", node, node->middle, node->middle->param);
     if (node->right != NULL)
-        printf("  n%08X -- n%08X [label=%i];\n", node, node->right, node->right->param);
+        printf("  n%p -- n%p [label=%i];\n", node, node->right, node->right->param);
 
     ast_dump(node->left);
     ast_dump(node->middle);

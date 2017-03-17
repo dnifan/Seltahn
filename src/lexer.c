@@ -10,14 +10,12 @@
 #include <varargs.h>
 
 uint32_t read_number(lexer_state *state) {
-    uint32_t result;
-
     char buf[32];
     memset(buf, 0, 32);
-    char *ptr = &buf;
+    char *ptr = (char*)&buf;
     while (isdigit(*state->current) && state->current < state->end) {
         *ptr++ = *state->current++;
-        if (ptr == (&buf + sizeof(buf)-1))
+        if (ptr == (char*)(&buf + sizeof(buf)-1))
             lex_fatal("Buffer overflow in read_number()");
     }
 
@@ -239,7 +237,7 @@ token_t **lex_run(lexer_state *state, uint32_t *token_count) {
     }
     
     *token_count = list->length;
-    return list_toarray(list);
+    return (token_t**)list_toarray(list);
 }
 
 lexer_state *lex_init(const char * input)
@@ -249,7 +247,7 @@ lexer_state *lex_init(const char * input)
 	state->line = 1;
     state->input = (const char *)malloc(strlen(input) + 1);
     strcpy((char*)state->input, input);
-    state->current = state->input;
+    state->current = (char*)state->input;
     state->end = state->input + strlen(state->input);
 
     return state;

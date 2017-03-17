@@ -2,7 +2,8 @@
 #include "ast.h"
 #include "list.h"
 
-#include <varargs.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -617,6 +618,8 @@ ast_node_t *assignment_expression() {
         n->right = right;
         return n;
     }
+    
+    return n;
 }
 
 ast_node_t *expression() {
@@ -810,6 +813,7 @@ ast_node_t *iteration_statement() {
 	else if (accept(FOR)) {
         // TODO: for loops
         ast_fatal(current, "for loops not supported yet");
+        return NULL;
 	}
 	else
 		return NULL;
@@ -948,14 +952,16 @@ ast_node_t *translation_unit() {
 }
 
 ast_t *ast_create(token_t **t, int token_count) {
+    ast_t *ast = (ast_t*)malloc(sizeof(ast_t));
     tokens = t;
     token_index = 0;
     total_tokens = token_count;
 	contexts = list_new();
 
     next();
-    ast_node_t *root_node = translation_unit();
+    ast->root_node = translation_unit();
+    ast_dump_start(ast->root_node);
 
-    ast_dump_start(root_node);
 	list_free(contexts);
+    return ast;
 }
