@@ -52,7 +52,10 @@ const char *ast_translation[] = {
 	"IF_STATEMENT",
 	"SWITCH_STATEMENT",
 	"CASE_STATEMENT",
-	"DEFAULT_STATEMENT"
+	"DEFAULT_STATEMENT",
+	"WHILE_STATEMENT",
+	"FOR_STATEMENT",
+	"DO_STATEMENT"
 };
 
 void ast_fatal(const char *reason, ...) {

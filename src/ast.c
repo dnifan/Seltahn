@@ -638,6 +638,46 @@ ast_node_t *labeled_statement() {
 		return NULL;
 }
 
+ast_node_t *iteration_statement() {
+	if (accept(WHILE)) {
+		ast_node_t *result = new_node(WHILE_STATEMENT);
+		
+		expect(LPAREN);
+		result->left = expression();
+		if (result->left == NULL)
+			ast_fatal("expected expression");
+		expect(RPAREN);
+
+		result->right = statement();
+		if (result->right == NULL)
+			ast_fatal("expected statement");
+
+		return result;
+	}
+	else if (accept(DO)) {
+		ast_node_t *result = new_node(DO_STATEMENT);
+
+		result->left = statement();
+		if (result->left == NULL)
+			ast_fatal("expected statement");
+
+		expect(WHILE);
+		expect(LPAREN);
+		result->right = expression();
+		if (result->right == NULL)
+			ast_fatal("expected expression");
+		expect(RPAREN);
+		expect(SEMICOLON);
+
+		return result;
+	}
+	else if (accept(FOR)) {
+
+	}
+	else
+		return NULL;
+}
+
 ast_node_t *statement() {
 	ast_node_t *s = labeled_statement();
 	if (s != NULL) 
@@ -648,6 +688,10 @@ ast_node_t *statement() {
 		return s;
 
 	s = selection_statement();
+	if (s != NULL)
+		return s;
+
+	s = iteration_statement();
 	if (s != NULL)
 		return s;
 

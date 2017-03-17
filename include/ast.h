@@ -46,7 +46,10 @@ enum ast_node_type {
 	IF_STATEMENT,
 	SWITCH_STATEMENT,
 	CASE_STATEMENT,
-	DEFAULT_STATEMENT
+	DEFAULT_STATEMENT,
+	WHILE_STATEMENT,
+	FOR_STATEMENT,
+	DO_STATEMENT
 };
 typedef enum ast_node_type ast_node_type;
 
