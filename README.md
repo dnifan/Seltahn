@@ -11,7 +11,7 @@ Seltahn is a hobbyist's recursive descent C compiler, built from scratch for edu
  
 # Modifications
  * The *goto* keyword will not be supported, together with labels.
- * [K&R C style function definitions}(https://en.wikipedia.org/wiki/Indent_style#K.26R) will not be supported.
+ * [K&R C style function definitions](https://en.wikipedia.org/wiki/Indent_style#K.26R) will not be supported.
 
 # Used Sources
  * ANSI C89 Grammar: https://www.lysator.liu.se/c/ANSI-C-grammar-y.html
