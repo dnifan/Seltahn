@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 const char *ast_translation[] = {
+    "EMPTY",
     "TRANSLATION_UNIT",
     "FUNCTION_DECLARATION",
     "DECLARATION",
@@ -31,7 +32,8 @@ const char *ast_translation[] = {
     "DECREMENT",
     "ARRAY_DECLARE",
     "ARRAY_INDEX",
-    "CONSTANT",
+    "CONSTANT_NUMBER",
+    "CONSTANT_STRING",
     "ASSIGNMENT",
     "ASSIGNMENT_OPERATOR",
     "BITSHIFT_LEFT",
@@ -55,7 +57,14 @@ const char *ast_translation[] = {
 	"DEFAULT_STATEMENT",
 	"WHILE_STATEMENT",
 	"FOR_STATEMENT",
-	"DO_STATEMENT"
+	"DO_STATEMENT",
+    "CONTINUE_STATEMENT",
+    "BREAK_STATEMENT",
+    "RETURN_STATEMENT",
+    "SYMBOL_REF",
+    "PTR_FOLLOW",
+    "FIELD_FOLLOW",
+    "FUNCTION_CALL"
 };
 
 void ast_fatal(token_t *token, const char *reason, ...) {

@@ -1,4 +1,5 @@
 enum ast_node_type {
+    EMPTY,
     TRANSLATION_UNIT,
     FUNCTION_DECLARATION,
     DECLARATION,
@@ -25,7 +26,8 @@ enum ast_node_type {
     DECREMENT,
     ARRAY_DECLARE,
     ARRAY_INDEX,
-    CONSTANT,
+    CONSTANT_NUMBER,
+    CONSTANT_STRING,
     ASSIGNMENT,
     ASSIGNMENT_OPERATOR,
     BITSHIFT_LEFT,
@@ -49,7 +51,14 @@ enum ast_node_type {
 	DEFAULT_STATEMENT,
 	WHILE_STATEMENT,
 	FOR_STATEMENT,
-	DO_STATEMENT
+	DO_STATEMENT,
+    CONTINUE_STATEMENT,
+    BREAK_STATEMENT,
+    RETURN_STATEMENT,
+    SYMBOL_REF,
+    PTR_FOLLOW,
+    FIELD_FOLLOW,
+    FUNCTION_CALL
 };
 typedef enum ast_node_type ast_node_type;
 

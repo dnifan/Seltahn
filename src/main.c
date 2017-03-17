@@ -3,30 +3,6 @@
 #include "lexer.h"
 #include "ast.h"
 
-const char *example = "int main()\
-{\
-    char  line[100];\
-    int   total;\
-    int   item;\
-\
-    total = 0;\
-    while (1) {\
-        printf(\"Enter # to add \\n\");\
-        printf(\"  or 0 to stop:\");\
-\
-        fgets(line, sizeof(line), stdin);\
-        sscanf(line, \"%d\", &item);\
-\
-        if (item == 0)\
-            break;\
-\
-        total += item;\
-        printf(\"Total: %d\\n\", total);\
-    }\
-    printf(\"Final total %d\\n\", total);\
-    return (0);\
-}";
-
 void tokens_debug(token_t **tokens, int token_count) {
     for (int i = 0;i < token_count;i++) {
         token_t *token = tokens[i];
@@ -70,8 +46,6 @@ int main(int argc, char *argv[]) {
 	fclose(fp);
 
     uint32_t token_count;
-    //lexer_state *state = lex_init("unsigned static int a() { if (1 == 1 && 500 >= (6<<3)) { switch(3-1==0) { case 1: {} default: { } } } else { } }");
-	//lexer_state *state = lex_init("int my_func() { do { } while (1<2); }");
 	lexer_state *state = lex_init(buffer);
     token_t **tokens = lex_run(state, &token_count);
     ast_t *ast = ast_create(tokens, token_count);

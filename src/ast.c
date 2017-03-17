@@ -17,6 +17,7 @@ ast_node_t *expression();
 ast_node_t *cast_expression();
 ast_node_t *compound_statement();
 ast_node_t *conditional_expression();
+ast_node_t *postfix_expression();
 void ast_dump_start(ast_node_t *root);
 
 void push() {
@@ -75,6 +76,17 @@ void expect(token_type_t tok) {
 
     if (!is_eof())
         next();
+}
+
+ast_node_t *identifier() {
+    if (current->type == SYMBOL) {
+        ast_node_t *result = new_node(SYMBOL_REF);
+        // TODO: add pointer to symbol table here.
+        next();
+        return result;
+    }
+
+    return NULL;
 }
 
 ast_node_t *type_specifier() {
@@ -186,10 +198,19 @@ ast_node_t *declarator() {
 
 ast_node_t *primary_expression() {
     if (current->type == NUMBER) {
-        ast_node_t *result = new_node(CONSTANT);
+        ast_node_t *result = new_node(CONSTANT_NUMBER);
         result->param = current->param.number;
         next();
         return result;
+    }
+    else if (current->type == STRING) {
+        ast_node_t *result = new_node(CONSTANT_STRING);
+        result->param = (uint32_t)current->param.string;
+        next();
+        return result;
+    }
+    else if (current->type == SYMBOL) {
+        return identifier();
     }
     else if (accept(LPAREN)) {
         ast_node_t *result = expression();
@@ -201,23 +222,67 @@ ast_node_t *primary_expression() {
     }
 }
 
-ast_node_t *postfix_expression() {  // a[123]
-
-    return primary_expression();
-
-    /*ast_node_t *n = primary_expression();
-    
+ast_node_t *postfix() {
     if (accept(LBRACK)) {
-        ast_node_t *result = new_node(ARRAY_INDEX);
-        result->
-    }*/
-    
-    /*if (current->type == NUMBER) {
-        ast_node_t *n = new_node(CONSTANT);
-        n->param = current->param.number;
-        next();
+        ast_node_t *ex = expression();
+        if (ex == NULL)
+            ast_fatal(current, "expected expression");
+        expect(RBRACK);
+
+        ast_node_t *n = new_node(ARRAY_INDEX);
+        n->left = ex;
+        n->right = postfix();
         return n;
-    }*/
+    }
+    else if (accept(LPAREN)) {
+        if (accept(RPAREN)) {
+            return new_node(FUNCTION_CALL);
+        }
+    }
+    else if (accept(PERIOD)) {
+        ast_node_t *id = identifier();
+        if (id == NULL)
+            ast_fatal(current, "identifier expected");
+
+        ast_node_t *result = new_node(FIELD_FOLLOW);
+        result->left = id;
+        result->right = postfix();
+        return result;
+    }
+    else if (accept(OP_PTR)) {
+        ast_node_t *id = identifier();
+        if (id == NULL)
+            ast_fatal(current, "identifier expected");
+
+        // TODO: check for crazy inverted tree output
+        ast_node_t *result = new_node(PTR_FOLLOW);
+        result->left = id;
+        result->right = postfix();
+        return result;
+    }
+    else if (accept(OP_INC)) {
+        ast_node_t *n = new_node(INCREMENT);
+        n->right = postfix();
+        return n;
+    }
+    else if (accept(OP_DEC)) {
+        ast_node_t *n = new_node(DECREMENT);
+        n->right = postfix();
+        return n;
+    }
+    else
+        return NULL;
+}
+
+ast_node_t *postfix_expression() {
+
+    ast_node_t *ex = primary_expression();
+    if (ex == NULL) {
+        return NULL;
+    }
+
+    ex->right = postfix();
+    return ex;
 }
 
 ast_node_t *unary_operator() {
@@ -672,10 +737,45 @@ ast_node_t *iteration_statement() {
 		return result;
 	}
 	else if (accept(FOR)) {
-
+        // TODO: for loops
+        ast_fatal(current, "for loops not supported yet");
 	}
 	else
 		return NULL;
+}
+
+ast_node_t *jump_statement() {
+    if (accept(CONTINUE)) {
+        ast_node_t *n = new_node(CONTINUE_STATEMENT);
+        expect(SEMICOLON);
+        return n;
+    }
+    else if (accept(BREAK)) {
+        ast_node_t *n = new_node(BREAK_STATEMENT);
+        expect(SEMICOLON);
+        return n;
+    }
+    else if (accept(RETURN)) {
+        ast_node_t *n = new_node(RETURN_STATEMENT);
+        n->left = expression();
+        expect(SEMICOLON);
+        return n;
+    }
+    else
+        return NULL;
+}
+
+ast_node_t *expression_statement() {
+    if (accept(SEMICOLON))
+        return new_node(EMPTY);
+    
+    ast_node_t *ex = expression();
+    if (ex != NULL) {
+        expect(SEMICOLON);
+        return ex;
+    }
+
+    return NULL;
 }
 
 ast_node_t *statement() {
@@ -687,6 +787,10 @@ ast_node_t *statement() {
 	if (s != NULL)
 		return s;
 
+    s = expression_statement();
+    if (s != NULL)
+        return s;
+
 	s = selection_statement();
 	if (s != NULL)
 		return s;
@@ -694,6 +798,10 @@ ast_node_t *statement() {
 	s = iteration_statement();
 	if (s != NULL)
 		return s;
+
+    s = jump_statement();
+    if (s != NULL)
+        return s;
 
 	return NULL;
 }
