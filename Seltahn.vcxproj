@@ -25,6 +25,9 @@
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\tokens.c" />
     <ClCompile Include="src\utils.c" />
+    <ClCompile Include="test.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ast.h" />

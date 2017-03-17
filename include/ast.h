@@ -69,6 +69,6 @@ struct ast_t {
 typedef struct ast_t ast_t;
 
 ast_t *ast_create(token_t **tokens, int token_count);
-void ast_fatal(const char *reason, ...);
+void ast_fatal(token_t *token, const char *reason, ...);
 const char *ast_get_type_name(ast_node_type type);
 void ast_dump_start(ast_node_t *root);

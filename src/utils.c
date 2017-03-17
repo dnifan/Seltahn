@@ -58,10 +58,10 @@ const char *ast_translation[] = {
 	"DO_STATEMENT"
 };
 
-void ast_fatal(const char *reason, ...) {
+void ast_fatal(token_t *token, const char *reason, ...) {
     va_list ap;
     va_start(ap, reason);
-    printf("ast_fatal: ");
+    printf("ast_fatal: Line %i: ", token->line);
     vprintf(reason, ap);
     printf("\n\n");
     va_end(ap);

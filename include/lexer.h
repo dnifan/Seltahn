@@ -2,6 +2,7 @@ struct lexer_state {
     const char *input;
     const char *end;
     char *current;
+	uint32_t line;
 };
 typedef struct lexer_state lexer_state;
 

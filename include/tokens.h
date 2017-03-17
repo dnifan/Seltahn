@@ -104,6 +104,7 @@ union token_parameter {
 struct token_t {
     token_type_t type;
     union token_parameter param;
+	uint32_t line;
 };
 typedef struct token_t token_t;
 

@@ -52,7 +52,7 @@ uint8_t is_eof() {
 
 void next() {
     if (is_eof())
-        ast_fatal("unexpected end of stream");
+        ast_fatal(current, "unexpected end of stream");
     current = tokens[token_index++];
 }
 
@@ -71,7 +71,7 @@ uint8_t accept(token_type_t tok) {
 
 void expect(token_type_t tok) {
     if (current->type != tok)
-        ast_fatal("Expected %s.", token_get_name_by_type(tok));
+        ast_fatal(current, "Expected %s.", token_get_name_by_type(tok));
 
     if (!is_eof())
         next();
@@ -250,7 +250,7 @@ ast_node_t *unary_expression() {
         ast_node_t *n = new_node(SIZE_OF);
         
         if (accept(LPAREN)) {
-            ast_fatal("sizeof(type_name) not supported yet.");
+            ast_fatal(current, "sizeof(type_name) not supported yet.");
         }
 
         n->left = unary_expression();
@@ -577,16 +577,16 @@ ast_node_t *selection_statement() {
 		expect(LPAREN);
 		result->left = expression();
 		if (result->left == NULL)
-			ast_fatal("expected expression");
+			ast_fatal(current, "expected expression");
 		expect(RPAREN);
 		result->middle = statement();
 		if (result->middle == NULL)
-			ast_fatal("expected statement");
+			ast_fatal(current, "expected statement");
 
 		if (accept(ELSE)) {
 			result->right = statement();
 			if (result->right == NULL)
-				ast_fatal("expected statement");
+				ast_fatal(current, "expected statement");
 		}
 
 		return result;
@@ -597,12 +597,12 @@ ast_node_t *selection_statement() {
 		expect(LPAREN);
 		result->left = expression();
 		if (result->left == NULL)
-			ast_fatal("expected expression");
+			ast_fatal(current, "expected expression");
 		expect(RPAREN);
 
 		result->right = statement();
 		if (result->right == NULL)
-			ast_fatal("expected statement");
+			ast_fatal(current, "expected statement");
 
 		return result;
 	}
@@ -615,12 +615,12 @@ ast_node_t *labeled_statement() {
 		ast_node_t *result = new_node(CASE_STATEMENT);
 		result->left = constant_expression();
 		if (result->left == NULL)
-			ast_fatal("expected constant_expression");
+			ast_fatal(current, "expected constant_expression");
 		expect(COLON);
 		
 		result->right = statement();
 		if (result->right == NULL)
-			ast_fatal("expected statement");
+			ast_fatal(current, "expected statement");
 
 		return result;
 	}
@@ -630,7 +630,7 @@ ast_node_t *labeled_statement() {
 
 		result->left = statement();
 		if (result->left == NULL)
-			ast_fatal("expected statement");
+			ast_fatal(current, "expected statement");
 
 		return result;
 	}
@@ -645,12 +645,12 @@ ast_node_t *iteration_statement() {
 		expect(LPAREN);
 		result->left = expression();
 		if (result->left == NULL)
-			ast_fatal("expected expression");
+			ast_fatal(current, "expected expression");
 		expect(RPAREN);
 
 		result->right = statement();
 		if (result->right == NULL)
-			ast_fatal("expected statement");
+			ast_fatal(current, "expected statement");
 
 		return result;
 	}
@@ -659,13 +659,13 @@ ast_node_t *iteration_statement() {
 
 		result->left = statement();
 		if (result->left == NULL)
-			ast_fatal("expected statement");
+			ast_fatal(current, "expected statement");
 
 		expect(WHILE);
 		expect(LPAREN);
 		result->right = expression();
 		if (result->right == NULL)
-			ast_fatal("expected expression");
+			ast_fatal(current, "expected expression");
 		expect(RPAREN);
 		expect(SEMICOLON);
 
@@ -746,7 +746,7 @@ ast_node_t *external_declaration() {
         // function declaration
 		d = declaration();
 		if (d == NULL) {
-			ast_fatal("expected function definition or declaration");
+			ast_fatal(current, "expected function definition or declaration");
 		}
     }
     return d;

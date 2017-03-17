@@ -59,13 +59,16 @@ token_t *read_token(lexer_state *state) {
     token_t *token = (token_t*)malloc(sizeof(token_t));
     token->param.number = 0;
 
+	if (*state->current == '\n')
+		state->line++;
+
     if (isdigit(*state->current)) {
         // It must be a number, read it.
         token->type = NUMBER;
         token->param.number = read_number(state);
     }
     else if (iswspace(*state->current)) {
-        token->type = WHITESPACE;
+		token->type = WHITESPACE;
         token->param.number = eat_whitespace(state);;
     }
     else if (*state->current == '"') {
@@ -221,6 +224,7 @@ token_t *read_token(lexer_state *state) {
         lex_fatal("Unknown token '%c'!", *state->current);
     }
 
+	token->line = state->line;
     return token;
 }
 
@@ -242,6 +246,7 @@ lexer_state *lex_init(const char * input)
 {
     lexer_state *state = (lexer_state*)malloc(sizeof(lexer_state));
 
+	state->line = 1;
     state->input = (const char *)malloc(strlen(input) + 1);
     strcpy((char*)state->input, input);
     state->current = state->input;
