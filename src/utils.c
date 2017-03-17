@@ -18,7 +18,7 @@ const char *ast_translation[] = {
     "UNARY_OPERATOR",
 	"COMPOUND_STATEMENT",
 	"FUNCTION_DEFINITION",
-
+	"STATEMENT_LIST",
 
 
 
@@ -48,7 +48,9 @@ const char *ast_translation[] = {
     "MULTIPLY",
     "DIVIDE",
     "MODULO",
-    "SIZE_OF"
+    "SIZE_OF",
+	"IF_STATEMENT",
+	"SWITCH_STATEMENT"
 };
 
 void ast_fatal(const char *reason, ...) {

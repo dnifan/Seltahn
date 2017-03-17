@@ -13,7 +13,7 @@ enum ast_node_type {
     UNARY_OPERATOR,
 	COMPOUND_STATEMENT,
 	FUNCTION_DEFINITION,
-
+	STATEMENT_LIST,
 
 
     CONDITIONAL,
@@ -42,7 +42,9 @@ enum ast_node_type {
     MULTIPLY,
     DIVIDE,
     MODULO,
-    SIZE_OF
+    SIZE_OF,
+	IF_STATEMENT,
+	SWITCH_STATEMENT
 };
 typedef enum ast_node_type ast_node_type;
 

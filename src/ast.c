@@ -11,9 +11,11 @@ uint32_t total_tokens, token_index;
 token_t **tokens;
 linked_list *contexts;
 
+ast_node_t *statement();
 ast_node_t *declarator();
 ast_node_t *expression();
 ast_node_t *cast_expression();
+ast_node_t *compound_statement();
 ast_node_t *conditional_expression();
 void ast_dump_start(ast_node_t *root);
 
@@ -568,10 +570,75 @@ ast_node_t *declaration() {
     return d;
 }
 
+ast_node_t *selection_statement() {
+	if (accept(IF)) {
+		ast_node_t *result = new_node(IF_STATEMENT);
+
+		expect(LPAREN);
+		result->left = expression();
+		if (result->left == NULL)
+			ast_fatal("expected expression");
+		expect(RPAREN);
+		result->middle = statement();
+		if (result->middle == NULL)
+			ast_fatal("expected statement");
+
+		if (accept(ELSE)) {
+			result->right = statement();
+			if (result->right == NULL)
+				ast_fatal("expected statement");
+		}
+
+		return result;
+	}
+	else if (accept(SWITCH)) {
+		ast_node_t *result = new_node(SWITCH_STATEMENT);
+
+		expect(LPAREN);
+		result->left = expression();
+		if (result->left == NULL)
+			ast_fatal("expected expression");
+		expect(RPAREN);
+
+		result->right = statement();
+		if (result->right == NULL)
+			ast_fatal("expected statement");
+
+		return result;
+	}
+	else
+		return NULL;
+}
+
+ast_node_t *statement() {
+	ast_node_t *s = compound_statement();
+	if (s != NULL) 
+		return s;
+
+	s = selection_statement();
+	if (s != NULL)
+		return s;
+
+	return NULL;
+}
+
+ast_node_t *statement_list() {
+	ast_node_t *s = statement();
+	if (s != NULL) {
+		ast_node_t *result = new_node(STATEMENT_LIST);
+		result->left = s;
+		result->right = statement_list();
+		return result;
+	}
+	return NULL;
+}
+
 ast_node_t *compound_statement() {
 	if (accept(LBRACE)) {
+		ast_node_t *result = new_node(COMPOUND_STATEMENT);
+		result->middle = statement_list();
 		expect(RBRACE);
-		return new_node(COMPOUND_STATEMENT);
+		return result;
 	}
 	else
 		return NULL;
@@ -585,7 +652,6 @@ ast_node_t *function_definition() {
 		ast_node_t *c = compound_statement();
 		if (c != NULL) {
 			discard();
-			printf("it\'s a function!\n");
 
 			ast_node_t *n = new_node(FUNCTION_DEFINITION);
 			n->left = ds;
