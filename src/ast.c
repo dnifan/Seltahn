@@ -610,9 +610,41 @@ ast_node_t *selection_statement() {
 		return NULL;
 }
 
+ast_node_t *labeled_statement() {
+	if (accept(CASE)) {
+		ast_node_t *result = new_node(CASE_STATEMENT);
+		result->left = constant_expression();
+		if (result->left == NULL)
+			ast_fatal("expected constant_expression");
+		expect(COLON);
+		
+		result->right = statement();
+		if (result->right == NULL)
+			ast_fatal("expected statement");
+
+		return result;
+	}
+	else if (accept(DEFAULT)) {
+		ast_node_t *result = new_node(DEFAULT_STATEMENT);
+		expect(COLON);
+
+		result->left = statement();
+		if (result->left == NULL)
+			ast_fatal("expected statement");
+
+		return result;
+	}
+	else
+		return NULL;
+}
+
 ast_node_t *statement() {
-	ast_node_t *s = compound_statement();
+	ast_node_t *s = labeled_statement();
 	if (s != NULL) 
+		return s;
+
+	s = compound_statement();
+	if (s != NULL)
 		return s;
 
 	s = selection_statement();

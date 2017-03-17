@@ -47,7 +47,7 @@ void tokens_debug(token_t **tokens, int token_count) {
 int main() {
 
     uint32_t token_count;
-    lexer_state *state = lex_init("unsigned static int a() { if (1 == 1 && 500 >= (6<<3)) { switch(3-1==0) {  } } else { } }");
+    lexer_state *state = lex_init("unsigned static int a() { if (1 == 1 && 500 >= (6<<3)) { switch(3-1==0) { case 1: {} default: { } } } else { } }");
     token_t **tokens = lex_run(state, &token_count);
     ast_t *ast = ast_create(tokens, token_count);
     

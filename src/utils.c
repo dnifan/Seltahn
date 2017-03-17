@@ -50,7 +50,9 @@ const char *ast_translation[] = {
     "MODULO",
     "SIZE_OF",
 	"IF_STATEMENT",
-	"SWITCH_STATEMENT"
+	"SWITCH_STATEMENT",
+	"CASE_STATEMENT",
+	"DEFAULT_STATEMENT"
 };
 
 void ast_fatal(const char *reason, ...) {
