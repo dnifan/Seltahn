@@ -33,6 +33,9 @@ const char *ast_translation[] = {
     "PARAMETER_LIST",
     "PARAMETER_DECLARATION",
     "POINTER",
+    "ENUM_SPECIFIER",
+    "ENUMERATOR_LIST",
+    "ENUMERATOR",
 
     "CONDITIONAL",
     "INCREMENT",
@@ -72,7 +75,7 @@ const char *ast_translation[] = {
     "CONTINUE_STATEMENT",
     "BREAK_STATEMENT",
     "RETURN_STATEMENT",
-    "SYMBOL_REF",
+    "ID",
     "PTR_FOLLOW",
     "FIELD_FOLLOW",
     "FUNCTION_CALL"

@@ -1,5 +1,12 @@
 // This file is used to test the Seltahn compiler.
 
+enum something {
+    ABC,
+    DEF = 567,
+    GHI,
+    JKL = 1000
+};
+
 int main()
 {
     char  line[100];

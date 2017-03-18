@@ -13,7 +13,8 @@
 token_t *current;
 uint32_t total_tokens, token_index;
 token_t **tokens;
-stab_t *current_stab;
+stab_t *stab_root;
+stab_t *stab_current;
 linked_list *contexts;
 
 ast_node_t *pointer();
@@ -21,6 +22,7 @@ ast_node_t *statement();
 ast_node_t *declarator();
 ast_node_t *expression();
 ast_node_t *initializer();
+ast_node_t *enum_specifier();
 ast_node_t *cast_expression();
 ast_node_t *postfix_expression();
 ast_node_t *compound_statement();
@@ -87,7 +89,7 @@ void expect(token_type_t tok) {
 
 ast_node_t *identifier() {
     if (current->type == IDENTIFIER) {
-        ast_node_t *result = new_node(SYMBOL_REF);
+        ast_node_t *result = new_node(ID);
         // TODO: add pointer to symbol table here.
         next();
         return result;
@@ -97,13 +99,7 @@ ast_node_t *identifier() {
 }
 
 ast_node_t *type_specifier() {
-    if (accept(STRUCT)) {
-        ast_fatal(current, "structs not supported");
-    }
-    else if (accept(UNION)) {
-        ast_fatal(current, "unions not supported");
-    }
-    else if (current->type == VOID ||
+    if (current->type == VOID ||
         current->type == INT ||
         current->type == CHAR ||
         current->type == SHORT ||
@@ -118,6 +114,11 @@ ast_node_t *type_specifier() {
         res->token = current;
         next();
         return res;
+    }
+    else {
+        ast_node_t *es = enum_specifier();
+        if (es != NULL)
+            return es;
     }
 
     return NULL;
@@ -244,6 +245,9 @@ ast_node_t *direct_declarator() {
         res = declarator(tokens);
         expect(RPAREN);
     }
+
+    if (res == NULL)
+        return NULL;
 
     res->right = dd_suffix();
     return res;
@@ -965,6 +969,51 @@ ast_node_t *type_qualifier_list() {
     return result;
 }
 
+ast_node_t *enumerator() {
+    ast_node_t *id = identifier();
+    if (id == NULL)
+        return NULL;
+
+    ast_node_t *result = new_node(ENUMERATOR);
+    result->left = id;
+    if (accept(ASSIGN)) {
+        result->right = constant_expression();
+        if (result->right == NULL)
+            ast_fatal(current, "expected constant_expression");
+    }
+    return result;
+}
+
+ast_node_t *enumerator_list() {
+    ast_node_t *e = enumerator();
+    if (e == NULL)
+        return NULL;
+
+    ast_node_t *result = new_node(ENUMERATOR_LIST);
+    result->left = e;
+    if (accept(COMMA))
+        result->right = enumerator_list();
+    return result;
+}
+
+ast_node_t *enum_specifier() {
+    if (accept(ENUM)) {
+        ast_node_t *result = new_node(ENUM_SPECIFIER);
+        result->left = identifier();
+
+        if (accept(LBRACE)) {
+            result->right = enumerator_list();
+            if (result->right == NULL)
+                ast_fatal(current, "expected enumerator_list");
+            expect(RBRACE);
+        }
+
+        return result;
+    }
+    else
+        return NULL;
+}
+
 ast_node_t *pointer() {
     if (accept(ASTERISK)) {
         ast_node_t *result = new_node(POINTER);
@@ -1042,7 +1091,8 @@ ast_t *ast_create(token_t **t, int token_count) {
 	contexts = list_new();
 
     // create global scope symbol table
-    current_stab = stab_new(NULL);
+    stab_root = stab_new(NULL);
+    stab_current = stab_root;
 
     next();
     ast->root_node = translation_unit();

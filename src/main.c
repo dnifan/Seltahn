@@ -71,6 +71,9 @@ int main(int argc, char *argv[]) {
     // debug information
     ast_dump_start(ast->root_node);
     printf("total compile time: %d ms\n\n", end - start);
+
+    int a = 'ABCD';
+    printf("%c", a >> 24);
     
     lex_destroy(state);
     return 0;
