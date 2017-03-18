@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #include "list.h"
 #include "stab.h"
 #include "tokens.h"

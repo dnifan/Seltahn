@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 /*!
  * Defines a token of the C language.
  */

@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #include "tokens.h"
 #include "lexer.h"
 #include "ast.h"

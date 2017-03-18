@@ -9,6 +9,7 @@
 
 #include "list.h"
 #include <stdlib.h>
+#include <stdint.h>
 
 /*!
 * Creates a new linked list.

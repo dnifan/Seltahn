@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "tokens.h"
 
 const char *token_translation[] = {
