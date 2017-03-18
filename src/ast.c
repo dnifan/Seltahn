@@ -26,6 +26,10 @@ ast_node_t *assignment_expression();
 ast_node_t *conditional_expression();
 void ast_dump_start(ast_node_t *root);
 
+token_t *ast_current() {
+    return current;
+}
+
 void push() {
 	list_add(contexts, (void*)(token_index-1));
 }
@@ -80,7 +84,7 @@ void expect(token_type_t tok) {
 }
 
 ast_node_t *identifier() {
-    if (current->type == SYMBOL) {
+    if (current->type == IDENTIFIER) {
         ast_node_t *result = new_node(SYMBOL_REF);
         // TODO: add pointer to symbol table here.
         next();
@@ -92,10 +96,10 @@ ast_node_t *identifier() {
 
 ast_node_t *type_specifier() {
     if (accept(STRUCT)) {
-        ast_fatal("structs not supported");
+        ast_fatal(current, "structs not supported");
     }
     else if (accept(UNION)) {
-        ast_fatal("unions not supported");
+        ast_fatal(current, "unions not supported");
     }
     else if (current->type == VOID ||
         current->type == INT ||
@@ -263,7 +267,7 @@ ast_node_t *primary_expression() {
         next();
         return result;
     }
-    else if (current->type == SYMBOL) {
+    else if (current->type == IDENTIFIER) {
         return identifier();
     }
     else if (current->type == LPAREN) {

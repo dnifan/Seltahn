@@ -70,15 +70,10 @@ enum ast_node_type {
 };
 typedef enum ast_node_type ast_node_type;
 
-union ast_parameter {
-    uint32_t number;
-
-};
-
 struct ast_node_t {
     ast_node_type type;
     token_t *token;
-    union ast_parameter param;
+    uint32_t param;
     struct ast_node_t *left;
     struct ast_node_t *middle;
     struct ast_node_t *right;
@@ -95,3 +90,4 @@ ast_t *ast_create(token_t **tokens, int token_count);
 void ast_fatal(token_t *token, const char *reason, ...);
 const char *ast_get_type_name(ast_node_type type);
 void ast_dump_start(ast_node_t *root);
+token_t *ast_current();
