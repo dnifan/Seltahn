@@ -1,6 +1,7 @@
 #include "tokens.h"
 #include "ast.h"
 #include "list.h"
+#include "stab.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,7 @@
 token_t *current;
 uint32_t total_tokens, token_index;
 token_t **tokens;
+stab_t *current_stab;
 linked_list *contexts;
 
 ast_node_t *pointer();
@@ -42,6 +44,7 @@ ast_node_t *new_node(ast_node_type type) {
     ast_node_t *node = (ast_node_t*)malloc(sizeof(ast_node_t));
     memset(node, 0, sizeof(ast_node_t));
     node->type = type;
+    node->token = current;
     return node;
 }
 
@@ -88,7 +91,13 @@ ast_node_t *identifier() {
 }
 
 ast_node_t *type_specifier() {
-    if (current->type == VOID ||
+    if (accept(STRUCT)) {
+        ast_fatal("structs not supported");
+    }
+    else if (accept(UNION)) {
+        ast_fatal("unions not supported");
+    }
+    else if (current->type == VOID ||
         current->type == INT ||
         current->type == CHAR ||
         current->type == SHORT ||
@@ -145,7 +154,7 @@ ast_node_t *declaration_specifiers() {
             }
         }
     }
-    
+
     ast_node_t *node = new_node(DECLARATION_SPECIFIER_LIST);
     node->left = left;
     node->right = declaration_specifiers();
@@ -220,7 +229,7 @@ ast_node_t *dd_suffix() {
 
 ast_node_t *direct_declarator() {
     ast_node_t *res = NULL;
-    if (current->type == SYMBOL) {
+    if (current->type == IDENTIFIER) {
         res = new_node(DIRECT_DECLARATOR);
         next();
     }
@@ -388,7 +397,7 @@ ast_node_t *unary_expression() {
     }
     else if (accept(SIZEOF)) {
         ast_node_t *n = new_node(SIZE_OF);
-        
+
         if (accept(LPAREN)) {
             ast_fatal(current, "sizeof(type_name) not supported yet.");
         }
@@ -612,7 +621,7 @@ ast_node_t *logical_or_expression() {
 
 ast_node_t *conditional_expression() {
     ast_node_t *n = logical_or_expression();
-    
+
     // a ? b : c
     if (accept(QUESTION)) {
         ast_node_t *result = new_node(CONDITIONAL);
@@ -707,7 +716,7 @@ ast_node_t *initializer() {
 ast_node_t *init_declarator() {
     ast_node_t *node = new_node(INIT_DECLARATOR);
     node->left = declarator();
-    
+
     if (accept(ASSIGN)) {
         node->right = initializer();
     }
@@ -736,7 +745,7 @@ ast_node_t *declaration() {
     d->left = declaration_specifiers();
     if (d->left == NULL)
         return NULL;
-    
+
     // Apparently, C89 allows declaring a variable without a declarator list.
     // So, "int;" is allowed. :/
     d->right = init_declarator_list();
@@ -1015,7 +1024,7 @@ ast_node_t *translation_unit() {
     while (!is_eof()) {
         thisNode->right = translation_unit();
     }
-    
+
     return thisNode;
 }
 
@@ -1025,6 +1034,9 @@ ast_t *ast_create(token_t **t, int token_count) {
     token_index = 0;
     total_tokens = token_count;
 	contexts = list_new();
+
+    // create global scope symbol table
+    current_stab = stab_new(NULL);
 
     next();
     ast->root_node = translation_unit();
