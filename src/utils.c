@@ -9,6 +9,7 @@ const char *ast_translation[] = {
     "EMPTY",
     "TRANSLATION_UNIT",
     "FUNCTION_DECLARATION",
+    "DECLARATOR",
     "DECLARATION",
     "DECLARATION_LIST",
     "DECLARATION_SPECIFIER_LIST",
@@ -18,6 +19,7 @@ const char *ast_translation[] = {
     "DECLARATOR_LIST",
     "STORAGE_CLASS_SPECIFIER",
     "TYPE_QUALIFIER",
+    "TYPE_QUALIFIER_LIST",
     "INIT_DECLARATOR",
     "INITIALIZER_LIST",
     "UNARY_OPERATOR",
@@ -28,6 +30,7 @@ const char *ast_translation[] = {
     "CAST",
     "PARAMETER_LIST",
     "PARAMETER_DECLARATION",
+    "POINTER",
 
     "CONDITIONAL",
     "INCREMENT",

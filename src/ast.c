@@ -12,6 +12,7 @@ uint32_t total_tokens, token_index;
 token_t **tokens;
 linked_list *contexts;
 
+ast_node_t *pointer();
 ast_node_t *statement();
 ast_node_t *declarator();
 ast_node_t *expression();
@@ -34,12 +35,6 @@ void pop() {
 	token_index = (uint32_t)node->element;
 	current = tokens[token_index];
 
-	free(node);
-}
-
-void discard() {
-	list_node *node = list_last(contexts);
-	list_remove_node(contexts, node);
 	free(node);
 }
 
@@ -183,8 +178,12 @@ ast_node_t *parameter_list() {
 
     ast_node_t *result = new_node(PARAMETER_LIST);
     result->left = pd;
-    if (accept(COMMA))
-        result->right = parameter_list();
+    if (accept(COMMA)) {
+        if (accept(ELLIPS))
+            ast_fatal(current, "ellipsis not supported yet");
+        else 
+            result->right = parameter_list();
+    }
     return result;
 }
 
@@ -192,9 +191,6 @@ ast_node_t *parameter_type_list() {
     ast_node_t *pl = parameter_list();
     if (pl == NULL)
         return NULL;
-
-    accept(COMMA);
-    accept(ELLIPS);
     return pl;
 }
 
@@ -235,14 +231,14 @@ ast_node_t *direct_declarator() {
     }
 
     res->right = dd_suffix();
-
-    
-    
     return res;
 }
 
 ast_node_t *declarator() {
-    return direct_declarator();
+    ast_node_t *d = new_node(DECLARATOR);
+    d->left = pointer();
+    d->right = direct_declarator();
+    return d;
 }
 
 ast_node_t *primary_expression() {
@@ -261,10 +257,19 @@ ast_node_t *primary_expression() {
     else if (current->type == SYMBOL) {
         return identifier();
     }
-    else if (accept(LPAREN)) {
+    else if (current->type == LPAREN) {
+        push(); // ambiguity with casting
+        next();
         ast_node_t *result = expression();
-        expect(RPAREN);
-        return result;
+        if (result != NULL) {
+            expect(RPAREN);
+            return result;
+        } 
+        else {
+            pop();
+            return NULL;
+        }
+        
     }
     else {
         return NULL;
@@ -363,6 +368,7 @@ ast_node_t *unary_operator() {
         current->type == BANG) {
         ast_node_t *node = new_node(UNARY_OPERATOR);
         node->token = current;
+        next();
         return node;
     }
 
@@ -656,7 +662,6 @@ ast_node_t *assignment_expression() {
         ast_fatal(current, "expected assignment_expression");
     }
 
-    discard();
     ast_node_t *n = new_node(ASSIGNMENT);
     n->left = left;
     n->middle = ao;
@@ -934,6 +939,29 @@ ast_node_t *statement_list() {
 	return NULL;
 }
 
+ast_node_t *type_qualifier_list() {
+    ast_node_t *tq = type_qualifier();
+    if (tq == NULL)
+        return NULL;
+
+    ast_node_t *result = new_node(TYPE_QUALIFIER_LIST);
+    result->left = tq;
+    result->right = type_qualifier_list();
+    return result;
+}
+
+ast_node_t *pointer() {
+    if (accept(ASTERISK)) {
+        ast_node_t *result = new_node(POINTER);
+        result->left = type_qualifier_list();
+        result->right = pointer();
+        return result;
+    }
+    else {
+        return NULL;
+    }
+}
+
 ast_node_t *compound_statement() {
 	if (accept(LBRACE)) {
 		ast_node_t *result = new_node(COMPOUND_STATEMENT);
@@ -957,8 +985,6 @@ ast_node_t *function_definition() {
 	if (d != NULL) {
 		ast_node_t *c = compound_statement();
 		if (c != NULL) {
-			//discard();
-
 			ast_node_t *n = new_node(FUNCTION_DEFINITION);
 			n->left = ds;
 			n->middle = d;
@@ -1002,8 +1028,7 @@ ast_t *ast_create(token_t **t, int token_count) {
 
     next();
     ast->root_node = translation_unit();
-    ast_dump_start(ast->root_node);
-
+    
 	//list_free(contexts);
     return ast;
 }
