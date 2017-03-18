@@ -1,10 +1,8 @@
 // This file is used to test the Seltahn compiler.
 
-enum something {
-    ABC,
-    DEF = 567,
-    GHI,
-    JKL = 1000
+struct my_struct {
+    int a, b, c;
+    int bitfield : 4;
 };
 
 int main()

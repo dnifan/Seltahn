@@ -28,6 +28,7 @@ ast_node_t *postfix_expression();
 ast_node_t *compound_statement();
 ast_node_t *assignment_expression();
 ast_node_t *conditional_expression();
+ast_node_t *struct_or_union_specifier();
 void ast_dump_start(ast_node_t *root);
 
 token_t *ast_current() {
@@ -119,6 +120,10 @@ ast_node_t *type_specifier() {
         ast_node_t *es = enum_specifier();
         if (es != NULL)
             return es;
+
+        ast_node_t *su = struct_or_union_specifier();
+        if (su != NULL)
+            return su;
     }
 
     return NULL;
@@ -237,8 +242,7 @@ ast_node_t *dd_suffix() {
 ast_node_t *direct_declarator() {
     ast_node_t *res = NULL;
     if (current->type == IDENTIFIER) {
-        res = new_node(DIRECT_DECLARATOR);
-        next();
+        res = identifier();
     }
     else if (current->type == LPAREN) {
         next(); // (
@@ -981,6 +985,105 @@ ast_node_t *enumerator() {
         if (result->right == NULL)
             ast_fatal(current, "expected constant_expression");
     }
+    return result;
+}
+
+ast_node_t *struct_or_union() {
+    if (accept(STRUCT)) {
+        ast_node_t *r = new_node(STRUCT_OR_UNION);
+        r->param = STRUCT;
+        return r;
+    }
+    else if (accept(UNION)) {
+        ast_node_t *r = new_node(STRUCT_OR_UNION);
+        r->param = UNION;
+        return r;
+    }
+    else
+        return NULL;
+}
+
+ast_node_t *struct_declarator() {
+    ast_node_t *result = new_node(STRUCT_DECLARATOR);
+    result->left = declarator();
+    
+    if (accept(COLON)) {
+        result->right = constant_expression();
+    }
+
+    return result;
+}
+
+ast_node_t *struct_declarator_list() {
+    ast_node_t *sd = struct_declarator();
+    if (sd == NULL)
+        return NULL;
+    
+    ast_node_t *result = new_node(STRUCT_DECLARATOR_LIST);
+    result->left = sd;
+    if (accept(COMMA))
+        result->right = struct_declarator_list();
+    return result;
+}
+
+ast_node_t *specifier_qualifier_list() {
+    ast_node_t *ts = type_specifier();
+    if (ts != NULL) {
+        ast_node_t *res = new_node(SPECIFIER_QUALIFIER_LIST);
+        res->left = ts;
+        res->right = specifier_qualifier_list();
+        return res;
+    }
+    else {
+        ast_node_t *tq = type_qualifier();
+        if (tq != NULL) {
+            ast_node_t *res = new_node(SPECIFIER_QUALIFIER_LIST);
+            res->left = tq;
+            res->right = specifier_qualifier_list();
+            return res;
+        }
+        else
+            return NULL;
+    }
+}
+
+ast_node_t *struct_declaration() {
+    ast_node_t *result = new_node(STRUCT_DECLARATION);
+    result->left = specifier_qualifier_list();
+    if (result->left == NULL)
+        return NULL;
+    result->right = struct_declarator_list();
+    if (result->right == NULL)
+        ast_fatal(current, "expected struct_declarator_list");
+    expect(SEMICOLON);
+    return result;
+}
+
+ast_node_t *struct_declaration_list() {
+    ast_node_t *sd = struct_declaration();
+    if (sd == NULL)
+        return NULL;
+
+    ast_node_t *result = new_node(STRUCT_DECLARATION_LIST);
+    result->left = sd;
+    result->right = struct_declaration_list();
+    return result;
+}
+
+ast_node_t *struct_or_union_specifier() {
+    ast_node_t *su = struct_or_union();
+    if (su == NULL)
+        return NULL;
+
+    ast_node_t *result = new_node(STRUCT_OR_UNION_SPECIFIER);
+    result->left = identifier();
+    if (accept(LBRACE)) {
+        result->right = struct_declaration_list();
+        if (result->right == NULL)
+            ast_fatal(current, "expected struct_declaration_list");
+        expect(RBRACE);
+    }
+
     return result;
 }
 
