@@ -11,19 +11,13 @@ int main()
     int   total;
     int   item;
 
-    total = 0;
-    while (1) {
-
+    for (total = 0; total != 0; total += item) {
         printf("Enter # to add \n");
         printf("  or 0 to stop:");
 
         fgets(line, 100);
         sscanf(line, "%d", item);
 
-        if (item == 0)
-            break;
-
-        total += item;
         printf("Total: %dn", total);
     }
     printf("Final total %dn", total);

@@ -26,6 +26,7 @@ ast_node_t *enum_specifier();
 ast_node_t *cast_expression();
 ast_node_t *postfix_expression();
 ast_node_t *compound_statement();
+ast_node_t *expression_statement();
 ast_node_t *assignment_expression();
 ast_node_t *conditional_expression();
 ast_node_t *struct_or_union_specifier();
@@ -881,9 +882,24 @@ ast_node_t *iteration_statement() {
 		return result;
 	}
 	else if (accept(FOR)) {
-        // TODO: for loops
-        ast_fatal(current, "for loops not supported yet");
-        return NULL;
+        ast_node_t *result = new_node(FOR_STATEMENT);
+        result->left = new_node(FOR_STMT_CONDITIONAL);
+
+        expect(LPAREN);
+        result->left->left = expression_statement();
+        if (result->left->left == NULL)
+            ast_fatal(current, "expected expression_statement");
+        result->left->middle = expression_statement();
+        if (result->left->middle == NULL)
+            ast_fatal(current, "expected expression_statement");
+
+        result->left->right = expression();
+        expect(RPAREN);
+
+        result->right = statement();
+        if (result->right == NULL)
+            ast_fatal(current, "expected statement");
+        return result;
 	}
 	else
 		return NULL;
