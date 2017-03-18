@@ -26,7 +26,8 @@ const char *ast_translation[] = {
 	"STATEMENT_LIST",
     "ARG_EXPRESSION_LIST",
     "CAST",
-
+    "PARAMETER_LIST",
+    "PARAMETER_DECLARATION",
 
     "CONDITIONAL",
     "INCREMENT",
@@ -95,11 +96,13 @@ void ast_dump(ast_node_t *node) {
         printf("  n%p -- n%p [label=%i];\n", node, node->middle, node->middle->param);
     if (node->right != NULL)
         printf("  n%p -- n%p [label=%i];\n", node, node->right, node->right->param);
+    if (node->postfix!= NULL)
+        printf("  n%p -- n%p [label=\"Postfix\"];\n", node, node->postfix);
 
     ast_dump(node->left);
     ast_dump(node->middle);
     ast_dump(node->right);
-
+    ast_dump(node->postfix);
 }
 
 void ast_dump_start(ast_node_t *root) {

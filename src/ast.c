@@ -161,8 +161,65 @@ ast_node_t *constant_expression() {
     return conditional_expression();
 }
 
+ast_node_t *parameter_declaration() {
+    ast_node_t *ds = declaration_specifiers();
+    if (ds == NULL)
+        ast_fatal(current, "expected declaration_specifiers");
+
+    ast_node_t *d = declarator();
+    if (d == NULL)  // TODO: abstract declarator.
+        ast_fatal(current, "expected declarator");
+
+    ast_node_t *result = new_node(PARAMETER_DECLARATION);
+    result->left = ds;
+    result->right = d;
+    return result;
+}
+
+ast_node_t *parameter_list() {
+    ast_node_t *pd = parameter_declaration();
+    if (pd == NULL)
+        return NULL;
+
+    ast_node_t *result = new_node(PARAMETER_LIST);
+    result->left = pd;
+    if (accept(COMMA))
+        result->right = parameter_list();
+    return result;
+}
+
 ast_node_t *parameter_type_list() {
-    return NULL; // TODO
+    ast_node_t *pl = parameter_list();
+    if (pl == NULL)
+        return NULL;
+
+    accept(COMMA);
+    accept(ELLIPS);
+    return pl;
+}
+
+ast_node_t *dd_suffix() {
+    if (accept(LBRACK)) {
+        ast_node_t *res = new_node(ARRAY_DECLARE);
+        res->left = constant_expression();
+        expect(RBRACK);
+
+        res->right = dd_suffix();
+        return res;
+    }
+    else if (accept(LPAREN)) {
+        if (accept(RPAREN)) {
+            return new_node(EMPTY);
+        }
+
+        ast_node_t *l = parameter_type_list();
+        if (l == NULL)
+            ast_fatal(current, "expected RPAREN or parameter type list");
+        expect(RPAREN);
+        return l;
+    }
+    else
+        return NULL;
 }
 
 ast_node_t *direct_declarator() {
@@ -177,20 +234,9 @@ ast_node_t *direct_declarator() {
         expect(RPAREN);
     }
 
-    if (current->type == LBRACK) {
-        // array declaration
-        next(); // [
-        res = new_node(ARRAY_DECLARE);
-        res->left = constant_expression();
-        expect(RBRACK);
-        return res;
-    }
-    else if (current->type == LPAREN) {
-        // function prototype.
-        next(); // (
-        ast_node_t *ptl = parameter_type_list();
-        expect(RPAREN);
-    }
+    res->right = dd_suffix();
+
+    
     
     return res;
 }
@@ -304,7 +350,7 @@ ast_node_t *postfix_expression() {
         return NULL;
     }
 
-    ex->right = postfix();
+    ex->postfix = postfix();
     return ex;
 }
 
@@ -597,28 +643,24 @@ ast_node_t *assignment_operator() {
 }
 
 ast_node_t *assignment_expression() {
-    ast_node_t *n = conditional_expression();
 
-    if (n == NULL) {
-        ast_node_t *left = unary_expression();
-        if (left == NULL)
-            return NULL;
+    ast_node_t *left = conditional_expression();
 
-        ast_node_t *middle = assignment_operator();
-        if (middle == NULL)
-            return NULL;
-
-        ast_node_t *right = assignment_expression();
-        if (right == NULL)
-            return NULL;
-
-        n = new_node(ASSIGNMENT);
-        n->left = left;
-        n->middle = middle;
-        n->right = right;
-        return n;
+    ast_node_t *ao = assignment_operator();
+    if (ao == NULL) {
+        return left;
     }
-    
+
+    ast_node_t *ae = assignment_expression();
+    if (ao == NULL) {
+        ast_fatal(current, "expected assignment_expression");
+    }
+
+    discard();
+    ast_node_t *n = new_node(ASSIGNMENT);
+    n->left = left;
+    n->middle = ao;
+    n->right = ae;
     return n;
 }
 
@@ -915,7 +957,7 @@ ast_node_t *function_definition() {
 	if (d != NULL) {
 		ast_node_t *c = compound_statement();
 		if (c != NULL) {
-			discard();
+			//discard();
 
 			ast_node_t *n = new_node(FUNCTION_DEFINITION);
 			n->left = ds;
@@ -962,6 +1004,6 @@ ast_t *ast_create(token_t **t, int token_count) {
     ast->root_node = translation_unit();
     ast_dump_start(ast->root_node);
 
-	list_free(contexts);
+	//list_free(contexts);
     return ast;
 }

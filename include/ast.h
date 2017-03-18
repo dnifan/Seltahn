@@ -19,6 +19,8 @@ enum ast_node_type {
 	STATEMENT_LIST,
     ARG_EXPRESSION_LIST,
     CAST,
+    PARAMETER_LIST,
+    PARAMETER_DECLARATION,
 
     CONDITIONAL,
     INCREMENT,
@@ -72,6 +74,7 @@ struct ast_node_t {
     struct ast_node_t *left;
     struct ast_node_t *middle;
     struct ast_node_t *right;
+    struct ast_node_t *postfix;
 };
 typedef struct ast_node_t ast_node_t;
 

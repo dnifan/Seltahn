@@ -53,6 +53,13 @@ uint32_t eat_whitespace(lexer_state *state) {
     return counter;
 }
 
+void eat_line(lexer_state *state) {
+    while (*state->current != '\n')
+        state->current++;
+    state->line++;
+    state->current++;
+}
+
 token_t *read_token(lexer_state *state) {
     token_t *token = (token_t*)malloc(sizeof(token_t));
     token->param.number = 0;
@@ -64,6 +71,10 @@ token_t *read_token(lexer_state *state) {
         // It must be a number, read it.
         token->type = NUMBER;
         token->param.number = read_number(state);
+    }
+    else if (*state->current == '/' && *(state->current + 1) == '/') {
+        token->type = WHITESPACE;
+        eat_line(state);
     }
     else if (iswspace(*state->current)) {
 		token->type = WHITESPACE;
